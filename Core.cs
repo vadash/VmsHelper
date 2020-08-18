@@ -21,8 +21,6 @@ namespace VmsHelper
     public partial class VmsHelperCore : BaseSettingsPlugin<Settings>
     {
         private Random Random { get; } = new Random();
-        private DateTime NextVallMoltenShell { get; set; }
-        private DateTime NextMoltenShell { get; set; }
         private DateTime NextArmorFlask { get; set; }
         private DateTime NextSoulCatcherFlask { get; set; }
         private TimeCache<ActorVaalSkill?>? VmsActorVaalSkill { get; set; }
@@ -49,7 +47,6 @@ namespace VmsHelper
         private IEnumerator CastVallMoltenShell()
         {
             if (!Settings.UseVms ||
-                NextVallMoltenShell > DateTime.Now ||
                 IsShieldUp() ||
                 !IsVmsReady())
                 yield break;
@@ -82,14 +79,11 @@ namespace VmsHelper
 
                 yield return Input.KeyPress(Settings.VmsKey);
             }
-
-            NextVallMoltenShell = DateTime.Now.AddMilliseconds(Random.Next(45, 55));
         }
 
         private IEnumerator CastMoltenShell()
         {
             if (!Settings.UseMs ||
-                NextMoltenShell > DateTime.Now ||
                 IsShieldUp())
                 yield break;
             
@@ -114,8 +108,6 @@ namespace VmsHelper
 
                 yield return Input.KeyPress(Settings.MsKey);
             }
-
-            NextMoltenShell = DateTime.Now.AddMilliseconds(Random.Next(45, 55));
         }
         
         private bool IsShieldUp()
