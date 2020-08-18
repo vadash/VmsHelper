@@ -4,11 +4,11 @@ Automates vaal molten shell, molten shell, granite flask, soul catcher, granite 
 
 100% uptime 17K VMS with Brass dome ? EZ
 
+![](https://i.imgur.com/8Do4QbE.png)
+
 # install
 
 Copy to source folder `C:\projects\PoEHelper\Plugins\Source\VmsHelper`
-
-![](https://i.imgur.com/NjQC9UG.png)
 
 # setup 
 
