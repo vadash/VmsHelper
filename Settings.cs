@@ -1,4 +1,5 @@
-﻿using ExileCore.Shared.Attributes;
+﻿using System.Windows.Forms;
+using ExileCore.Shared.Attributes;
 using ExileCore.Shared.Interfaces;
 using ExileCore.Shared.Nodes;
 using SharpDX;
@@ -12,37 +13,55 @@ namespace VmsHelper
         [Menu("Debug")]
         public ToggleNode Debug { get; set; } = new ToggleNode(false);
 
+        #region VMS
+
         [Menu("Use VMS")]
         public ToggleNode UseVms { get; set; } = new ToggleNode(true);
         
         [Menu("VMS key")]
-        public HotkeyNode VmsKey { get; set; } = new HotkeyNode(System.Windows.Forms.Keys.R);
+        public HotkeyNode VmsKey { get; set; } = new HotkeyNode(Keys.R);
 
+        [Menu("Min HP to activate VMS (percent, set to 0 to disable)")]
+        public RangeNode<int> VmsMinHpPercentThreshold { get; set; } = new RangeNode<int>(90, 0, 100);
+        
+        [Menu("Min ES to activate VMS (percent, set to 0 to disable)")]
+        public RangeNode<int> VmsMinEsPercentThreshold { get; set; } = new RangeNode<int>(90, 0, 100);
+
+        #endregion
+
+        #region MS
+
+        [Menu("Use MS")]
+        public ToggleNode UseMs { get; set; } = new ToggleNode(true);
+        
         [Menu("MS key")]
-        public HotkeyNode MsKey { get; set; } = new HotkeyNode(System.Windows.Forms.Keys.T);
+        public HotkeyNode MsKey { get; set; } = new HotkeyNode(Keys.T);
+
+        [Menu("Min HP to activate MS (percent, set to 0 to disable)")]
+        public RangeNode<int> MsMinHpPercentThreshold { get; set; } = new RangeNode<int>(90, 0, 100);
+        
+        [Menu("Min ES to activate MS (percent, set to 0 to disable)")]
+        public RangeNode<int> MsMinEsPercentThreshold { get; set; } = new RangeNode<int>(90, 0, 100);
+
+        #endregion
+
+        #region Flasks
 
         [Menu("Soul catcher enabled")]
         public ToggleNode SoulCatcherEnabled { get; set; } = new ToggleNode(true);
 
         [Menu("Soul catcher key")]
-        public HotkeyNode SoulCatcherKey { get; set; } = new HotkeyNode(System.Windows.Forms.Keys.D5);
+        public HotkeyNode SoulCatcherKey { get; set; } = new HotkeyNode(Keys.D5);
+        
+        [Menu("Min mana to activate soul catcher (absolute, set to 0 to disable)")]
+        public RangeNode<int> MinManaSoulCatcherThreshold { get; set; } = new RangeNode<int>(90, 0, 500);
         
         [Menu("Granite flask enabled")]
         public ToggleNode GraniteFlaskEnabled { get; set; } = new ToggleNode(true);
  
         [Menu("Granite flask key")]
-        public HotkeyNode GraniteFlaskKey { get; set; } = new HotkeyNode(System.Windows.Forms.Keys.D4);
-        
-        [Menu("Range to activate (grid units)")]
-        public RangeNode<int> ActivateGridRange { get; set; } = new RangeNode<int>(50, 50, 250);
-        
-        [Menu("Min HP to activate (percent, set to 0 to disable)")]
-        public RangeNode<int> MinHpPercentThreshold { get; set; } = new RangeNode<int>(90, 0, 100);
-        
-        [Menu("Min ES to activate (percent, set to 0 to disable)")]
-        public RangeNode<int> MinEsPercentThreshold { get; set; } = new RangeNode<int>(90, 0, 100);
-        
-        [Menu("Min mana to activate soul catcher (absolute, set to 0 to disable)")]
-        public RangeNode<int> MinManaSoulCatcherThreshold { get; set; } = new RangeNode<int>(90, 0, 500);
+        public HotkeyNode GraniteFlaskKey { get; set; } = new HotkeyNode(Keys.D4);
+
+        #endregion
     }
 }

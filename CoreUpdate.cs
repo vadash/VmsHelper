@@ -15,27 +15,17 @@ namespace VmsHelper
             var actorVaalSkills = GameController?.Player?.GetComponent<Actor>()?.ActorVaalSkills;
             if (actorVaalSkills == null || actorVaalSkills.Count < 1)
             {
-                // broken offset PepeHands
                 return null;
             }
 
             return actorVaalSkills.FirstOrDefault(s => s.VaalSkillInternalName == "vaal_molten_shell");
         }
 
-        private double DistToCursor(Entity x)
+        private List<Buff>? UpdatePlayerBuffs()
         {
-            return x?.IsValid != true ? double.MaxValue : Math.Sqrt(DistToCursorSqr(x));
+            return GameController?.Player?.GetComponent<Life>()?.Buffs;
         }
-
-        private double DistToCursorSqr(Entity x)
-        {
-            if (x?.IsValid != true) return double.MaxValue;
-            var cursorPosition = Input.MousePosition;
-            var xOnScreen = GameController.IngameState.Camera.WorldToScreen(x.Pos);
-            var xToCursorSqr = Helpers.DistanceSquared(xOnScreen, cursorPosition);
-            return xToCursorSqr;
-        }
-
+        
         private IEnumerable<Entity> UpdateEnemies()
         {
             var enemies = GameController.Entities

@@ -26,12 +26,10 @@ namespace VmsHelper
         private DateTime NextArmorFlask { get; set; }
         private DateTime NextSoulCatcherFlask { get; set; }
         private TimeCache<ActorVaalSkill?>? VmsActorVaalSkill { get; set; }
-        //private TimeCache<IEnumerable<Entity>> NearbyEnemies { get; set; }
         
         public override void OnLoad()
         {
             VmsActorVaalSkill = new TimeCache<ActorVaalSkill?>(UpdateVms, 5000);
-            //NearbyEnemies = new TimeCache<IEnumerable<Entity>>(UpdateEnemies, 500);
             Core.MainRunner.Run(new Coroutine(MainCoroutine(), this, "VmsHelper1"));
             base.OnLoad();
         }
@@ -40,54 +38,97 @@ namespace VmsHelper
         {
             while (true)
             {
-                if (!CanRun() || !Settings.Enable) { yield return new WaitTime(500); continue; }
+                if (!CanRun()) { yield return new WaitTime(500); continue; }
 
                 yield return CastVallMoltenShell();
+                yield return CastMoltenShell();
                 yield return new WaitTime(16); // half server tick
             }
         }
 
         private IEnumerator CastVallMoltenShell()
         {
-            if (!Settings.Enable ||
-                !Settings.UseVms ||
+            if (!Settings.UseVms ||
                 NextVallMoltenShell > DateTime.Now ||
+                IsShieldUp() ||
                 !IsVmsReady())
                 yield break;
-            
-            var playerHpPercent = GameController?.Player?.GetComponent<Life>()?.HPPercentage;
-            var playerEsPercent = GameController?.Player?.GetComponent<Life>()?.ESPercentage;
 
-            var hpCondition = Settings.MinHpPercentThreshold > 0 &&
-                              playerHpPercent < Settings.MinHpPercentThreshold / 100d;
+            var lifeComponent = GameController?.Player?.GetComponent<Life>();
+            var playerHpPercent = lifeComponent?.HPPercentage;
+            var playerEsPercent = lifeComponent?.ESPercentage;
+
+            var hpCondition = Settings.VmsMinHpPercentThreshold > 0 &&
+                              playerHpPercent < Settings.VmsMinHpPercentThreshold / 100d;
             
-            var esCondition = Settings.MinEsPercentThreshold > 0 &&
-                              playerEsPercent < Settings.MinEsPercentThreshold / 100d;
+            var esCondition = Settings.VmsMinEsPercentThreshold > 0 &&
+                              playerEsPercent < Settings.VmsMinEsPercentThreshold / 100d;
             
             if (hpCondition || esCondition)
             {
-                if (Settings.GraniteFlaskEnabled && NextArmorFlask > DateTime.Now)
+                if (Settings.GraniteFlaskEnabled &&
+                    NextArmorFlask < DateTime.Now)
                 {
                     yield return Input.KeyPress(Settings.GraniteFlaskKey);
                     NextArmorFlask = DateTime.Now.AddMilliseconds(4800);
                 }
-                if (Settings.SoulCatcherEnabled && NextSoulCatcherFlask > DateTime.Now)
+                if (Settings.SoulCatcherEnabled &&
+                    NextSoulCatcherFlask < DateTime.Now &&
+                    lifeComponent?.CurMana > Settings.MinManaSoulCatcherThreshold)
                 {
                     yield return Input.KeyPress(Settings.SoulCatcherKey);
                     NextSoulCatcherFlask = DateTime.Now.AddMilliseconds(4000);
                 }
 
                 yield return Input.KeyPress(Settings.VmsKey);
-                yield return Input.KeyPress(Settings.VmsKey);
-                yield return Input.KeyPress(Settings.VmsKey);
             }
 
             NextVallMoltenShell = DateTime.Now.AddMilliseconds(Random.Next(45, 55));
         }
 
+        private IEnumerator CastMoltenShell()
+        {
+            if (!Settings.UseMs ||
+                NextMoltenShell > DateTime.Now ||
+                IsShieldUp())
+                yield break;
+            
+            var playerHpPercent = GameController?.Player?.GetComponent<Life>()?.HPPercentage;
+            var playerEsPercent = GameController?.Player?.GetComponent<Life>()?.ESPercentage;
+
+            var hpCondition = Settings.MsMinHpPercentThreshold > 0 &&
+                              playerHpPercent < Settings.MsMinHpPercentThreshold / 100d;
+            
+            var esCondition = Settings.MsMinEsPercentThreshold > 0 &&
+                              playerEsPercent < Settings.MsMinEsPercentThreshold / 100d;
+            
+            if (hpCondition || esCondition)
+            {
+                if (Settings.GraniteFlaskEnabled &&
+                    NextArmorFlask < DateTime.Now)
+                {
+                    yield return Input.KeyPress(Settings.GraniteFlaskKey);
+                    NextArmorFlask = DateTime.Now.AddMilliseconds(4800);
+                }
+
+                yield return Input.KeyPress(Settings.MsKey);
+            }
+
+            NextMoltenShell = DateTime.Now.AddMilliseconds(Random.Next(45, 55));
+        }
+        
+        private bool IsShieldUp()
+        {
+            var shield = GameController?.Player?.GetComponent<Life>()?.Buffs
+                .FirstOrDefault(buff => 
+                    buff.Name == "molten_shell_shield" && 
+                    buff.Timer > 0);
+            return shield != null;
+        }
+
         private bool IsVmsReady()
         {
-            return VmsActorVaalSkill?.Value == null ||
+            return VmsActorVaalSkill?.Value == null || // this offset is often broken
                    VmsActorVaalSkill?.Value?.CurrVaalSouls >= VmsActorVaalSkill?.Value?.VaalSoulsPerUse;
         }
 
@@ -100,11 +141,6 @@ namespace VmsHelper
             if (GameController?.Entities?.Count == 0) return false;
             if (GameController?.IsForeGroundCache == false) return false;
             return true;
-        }
-
-        public override void Render()
-        {
-
         }
     }
 }
