@@ -12,7 +12,7 @@
 
 Ultimate combo is granite flask of iron skin + soul catcher + VMS for 100% uptime 15K shield (brass dome elemancer)
 
-![](https://i.imgur.com/8Do4QbE.png)
+![](https://i.imgur.com/steesPN.png)
 
 # install
 
