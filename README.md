@@ -1,3 +1,5 @@
+![](https://i.imgur.com/v8NWSu3.png)
+
 # Features
 
 * Checking mana level before using soul catcher flask
@@ -10,7 +12,7 @@
 
 * Check vaal souls before using VMS. Have safeguards incase of offset broken
 
-Ultimate combo is granite flask of iron skin + soul catcher + VMS for 100% uptime 15K shield (brass dome elemancer)
+Ultimate combo is granite flask of iron skin + soul catcher (3c flask) + VMS for 100% uptime 15K shield (brass dome elemancer)
 
 ![](https://i.imgur.com/steesPN.png)
 
