@@ -1,0 +1,17 @@
+# VmsHelper
+
+Automates vaal molten shell, molten shell, granite flask, soul catcher, granite flask
+
+100% uptime 17K VMS with Brass dome ? EZ
+
+# install
+
+Copy to source folder `C:\projects\PoEHelper\Plugins\Source\VmsHelper`
+
+![](https://i.imgur.com/NjQC9UG.png)
+
+# setup 
+
+Disable soul catcher slot in Flasker
+
+Set minimum charges reserved for granite to 1 in Flasker
