@@ -93,8 +93,9 @@ namespace VmsHelper
                 IsShieldUp())
                 yield break;
             
-            var playerHpPercent = GameController?.Player?.GetComponent<Life>()?.HPPercentage;
-            var playerEsPercent = GameController?.Player?.GetComponent<Life>()?.ESPercentage;
+            var lifeComponent = GameController?.Player?.GetComponent<Life>();
+            var playerHpPercent = lifeComponent?.HPPercentage;
+            var playerEsPercent = lifeComponent?.ESPercentage;
 
             var hpCondition = Settings.MsMinHpPercentThreshold > 0 &&
                               playerHpPercent < Settings.MsMinHpPercentThreshold / 100d;
