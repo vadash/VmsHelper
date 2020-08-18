@@ -10,8 +10,6 @@ Automates vaal molten shell, molten shell, granite flask, soul catcher, granite 
 
 Copy to source folder `C:\projects\PoEHelper\Plugins\Source\VmsHelper`
 
-![](https://i.imgur.com/NjQC9UG.png)
-
 # setup 
 
 Disable soul catcher slot in Flasker
