@@ -18,7 +18,7 @@ Ultimate combo is granite flask of iron skin + soul catcher (3c flask) + VMS for
 
 # install
 
-Copy to source folder `C:\projects\PoEHelper\Plugins\Source\VmsHelper`
+Copy release to `\PoEHelper\Plugins\Compiled\VmsHelper`
 
 # setup 
 
