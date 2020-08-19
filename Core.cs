@@ -88,6 +88,7 @@ namespace VmsHelper
                 yield break;
             
             var lifeComponent = GameController?.Player?.GetComponent<Life>();
+            if (lifeComponent?.CurMana < 14) yield break;
             var playerHpPercent = lifeComponent?.HPPercentage;
             var playerEsPercent = lifeComponent?.ESPercentage;
 
