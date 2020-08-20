@@ -1,18 +1,11 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Windows.Forms;
 using ExileCore;
-using ExileCore.PoEMemory;
 using ExileCore.PoEMemory.Components;
 using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared;
 using ExileCore.Shared.Cache;
-using ExileCore.Shared.Enums;
-using SharpDX;
-using Vector2 = System.Numerics.Vector2;
 
 // ReSharper disable IteratorNeverReturns
 
@@ -20,14 +13,20 @@ namespace VmsHelper
 {
     public partial class VmsHelperCore : BaseSettingsPlugin<Settings>
     {
-        private Random Random { get; } = new Random();
+        private const float MIN_VMS_DURATION = 8.99f;
+        private const float MIN_MS_DURATION = 2.99f; 
+        
+        private DateTime NextVaalMoltenShell { get; set; }
+        private DateTime NextMoltenShell { get; set; }
         private DateTime NextArmorFlask { get; set; }
         private DateTime NextSoulCatcherFlask { get; set; }
         private TimeCache<ActorVaalSkill?>? VmsActorVaalSkill { get; set; }
+        private TimeCache<Life?>? PlayerLifeComponent { get; set; }
         
         public override void OnLoad()
         {
             VmsActorVaalSkill = new TimeCache<ActorVaalSkill?>(UpdateVms, 5000);
+            PlayerLifeComponent = new TimeCache<Life?>(UpdateLifeComponent, 66);
             Core.MainRunner.Run(new Coroutine(MainCoroutine(), this, "VmsHelper1"));
             base.OnLoad();
         }
@@ -47,13 +46,13 @@ namespace VmsHelper
         private IEnumerator CastVallMoltenShell()
         {
             if (!Settings.UseVms ||
+                NextVaalMoltenShell > DateTime.Now ||
                 IsShieldUp() ||
                 !IsVmsReady())
                 yield break;
 
-            var lifeComponent = GameController?.Player?.GetComponent<Life>();
-            var playerHpPercent = lifeComponent?.HPPercentage;
-            var playerEsPercent = lifeComponent?.ESPercentage;
+            var playerHpPercent = PlayerLifeComponent?.Value?.HPPercentage;
+            var playerEsPercent = PlayerLifeComponent?.Value?.ESPercentage;
 
             var hpCondition = Settings.VmsMinHpPercentThreshold > 0 &&
                               playerHpPercent < Settings.VmsMinHpPercentThreshold / 100d;
@@ -71,7 +70,7 @@ namespace VmsHelper
                 }
                 if (Settings.SoulCatcherEnabled &&
                     NextSoulCatcherFlask < DateTime.Now &&
-                    lifeComponent?.CurMana > Settings.MinManaSoulCatcherThreshold)
+                    PlayerLifeComponent?.Value?.CurMana > Settings.MinManaSoulCatcherThreshold)
                 {
                     yield return Input.KeyPress(Settings.SoulCatcherKey);
                     NextSoulCatcherFlask = DateTime.Now.AddMilliseconds(4000);
@@ -84,13 +83,13 @@ namespace VmsHelper
         private IEnumerator CastMoltenShell()
         {
             if (!Settings.UseMs ||
+                NextMoltenShell > DateTime.Now ||
                 IsShieldUp())
                 yield break;
             
-            var lifeComponent = GameController?.Player?.GetComponent<Life>();
-            if (lifeComponent?.CurMana < 14) yield break;
-            var playerHpPercent = lifeComponent?.HPPercentage;
-            var playerEsPercent = lifeComponent?.ESPercentage;
+            if (PlayerLifeComponent?.Value?.CurMana < 14) yield break;
+            var playerHpPercent = PlayerLifeComponent?.Value?.HPPercentage;
+            var playerEsPercent = PlayerLifeComponent?.Value?.ESPercentage;
 
             var hpCondition = Settings.MsMinHpPercentThreshold > 0 &&
                               playerHpPercent < Settings.MsMinHpPercentThreshold / 100d;
@@ -113,10 +112,24 @@ namespace VmsHelper
         
         private bool IsShieldUp()
         {
-            var shield = GameController?.Player?.GetComponent<Life>()?.Buffs
+            var shield = PlayerLifeComponent?.Value?.Buffs
                 .FirstOrDefault(buff => 
                     buff.Name == "molten_shell_shield" && 
                     buff.Timer > 0);
+            
+            if (NextVaalMoltenShell < DateTime.Now &&
+                shield?.MaxTime >= MIN_VMS_DURATION)
+            {
+                NextVaalMoltenShell = DateTime.Now.AddSeconds(shield?.Timer ?? 0.25);
+            }
+            
+            if (NextMoltenShell < DateTime.Now &&
+                shield?.MaxTime >= MIN_MS_DURATION &&
+                shield?.MaxTime < MIN_VMS_DURATION)
+            {
+                NextMoltenShell = DateTime.Now.AddSeconds(4);
+            }
+            
             return shield != null;
         }
 
