@@ -1,4 +1,4 @@
 ﻿using System.Reflection;
 
 [assembly: AssemblyTitle("VmsHelper")]
-[assembly: AssemblyVersion("1.2")]
+[assembly: AssemblyVersion("1.3")]

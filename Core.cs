@@ -35,10 +35,18 @@ namespace VmsHelper
         {
             while (true)
             {
-                if (!CanRun()) { yield return new WaitTime(500); continue; }
+                if (!CanRun())
+                {
+                    yield return new WaitTime(500);
+                    continue;
+                }
 
-                yield return CastVallMoltenShell();
-                yield return CastMoltenShell();
+                if (!IsShieldUp())
+                {
+                    yield return CastVallMoltenShell();
+                    yield return CastMoltenShell();                    
+                }
+                
                 yield return new WaitTime(16); // half server tick
             }
         }
@@ -47,7 +55,6 @@ namespace VmsHelper
         {
             if (!Settings.UseVms ||
                 NextVaalMoltenShell > DateTime.Now ||
-                IsShieldUp() ||
                 !IsVmsReady())
                 yield break;
 
@@ -83,8 +90,7 @@ namespace VmsHelper
         private IEnumerator CastMoltenShell()
         {
             if (!Settings.UseMs ||
-                NextMoltenShell > DateTime.Now ||
-                IsShieldUp())
+                NextMoltenShell > DateTime.Now)
                 yield break;
             
             if (PlayerLifeComponent?.Value?.CurMana < 14) yield break;
@@ -117,15 +123,11 @@ namespace VmsHelper
                     buff.Name == "molten_shell_shield" && 
                     buff.Timer > 0);
             
-            if (NextVaalMoltenShell < DateTime.Now &&
-                shield?.MaxTime >= MIN_VMS_DURATION)
+            if (shield?.MaxTime >= MIN_VMS_DURATION)
             {
                 NextVaalMoltenShell = DateTime.Now.AddSeconds(shield?.Timer ?? 0.25);
             }
-            
-            if (NextMoltenShell < DateTime.Now &&
-                shield?.MaxTime >= MIN_MS_DURATION &&
-                shield?.MaxTime < MIN_VMS_DURATION)
+            else if (shield?.MaxTime >= MIN_MS_DURATION)
             {
                 NextMoltenShell = DateTime.Now.AddSeconds(4);
             }
