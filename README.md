@@ -2,11 +2,13 @@
 
 # Features
 
+* Tracking of MS cooldown
+
 * Checking mana level before using soul catcher flask
 
 * Activate VMS, MS based on HP % and ES %
 
-* Dont override active shield
+* Dont override VMS with MS and vice versa
 
 * Use granite flask before MS, VMS
 
