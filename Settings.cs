@@ -47,21 +47,27 @@ namespace VmsHelper
 
         #region Flasks
 
-        [Menu("Soul catcher enabled")]
-        public ToggleNode SoulCatcherEnabled { get; set; } = new ToggleNode(true);
-
-        [Menu("Soul catcher key")]
-        public HotkeyNode SoulCatcherKey { get; set; } = new HotkeyNode(Keys.D5);
-        
-        [Menu("Min mana to activate soul catcher (absolute, set to 0 to disable)")]
-        public RangeNode<int> MinManaSoulCatcherThreshold { get; set; } = new RangeNode<int>(90, 0, 500);
-        
         [Menu("Granite flask enabled")]
         public ToggleNode GraniteFlaskEnabled { get; set; } = new ToggleNode(true);
  
         [Menu("Granite flask key")]
-        public HotkeyNode GraniteFlaskKey { get; set; } = new HotkeyNode(Keys.D4);
+        public HotkeyNode GraniteFlaskKey { get; set; } = new HotkeyNode(Keys.D3);
+        
+        [Menu("Soul catcher enabled")]
+        public ToggleNode SoulCatcherEnabled { get; set; } = new ToggleNode(true);
 
+        [Menu("Soul catcher key")]
+        public HotkeyNode SoulCatcherKey { get; set; } = new HotkeyNode(Keys.D4);
+        
+        [Menu("Min mana to activate soul catcher (absolute, set to 0 to disable)")]
+        public RangeNode<int> MinManaSoulCatcherThreshold { get; set; } = new RangeNode<int>(90, 0, 500);
+        
+        [Menu("Soul ripper enabled")]
+        public ToggleNode SoulRipperEnabled { get; set; } = new ToggleNode(false);
+
+        [Menu("Soul ripper key")]
+        public HotkeyNode SoulRipperKey { get; set; } = new HotkeyNode(Keys.D5);
+        
         #endregion
     }
 }

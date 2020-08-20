@@ -10,12 +10,7 @@ namespace VmsHelper
         private ActorVaalSkill? UpdateVms()
         {
             var actorVaalSkills = GameController?.Player?.GetComponent<Actor>()?.ActorVaalSkills;
-            if (actorVaalSkills == null || actorVaalSkills.Count < 1)
-            {
-                return null;
-            }
-
-            return actorVaalSkills.FirstOrDefault(s => s.VaalSkillInternalName == "vaal_molten_shell");
+            return actorVaalSkills.FirstOrDefault(s => s?.VaalSkillInternalName == "vaal_molten_shell");
         }
 
         private Life? UpdateLifeComponent() => GameController?.Player?.GetComponent<Life>();

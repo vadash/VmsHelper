@@ -53,10 +53,9 @@ namespace VmsHelper
 
         private IEnumerator CastVallMoltenShell()
         {
-            if (!Settings.UseVms ||
-                NextVaalMoltenShell > DateTime.Now ||
-                !IsVmsReady())
-                yield break;
+            if (!Settings.UseVms) yield break;
+            if (NextVaalMoltenShell > DateTime.Now) yield break;
+            if (!IsVmsReady() && !CanUseSoulRipper()) yield break;
 
             var playerHpPercent = PlayerLifeComponent?.Value?.HPPercentage;
             var playerEsPercent = PlayerLifeComponent?.Value?.ESPercentage;
@@ -82,6 +81,10 @@ namespace VmsHelper
                     yield return Input.KeyPress(Settings.SoulCatcherKey);
                     NextSoulCatcherFlask = DateTime.Now.AddMilliseconds(4000);
                 }
+                if (Settings.SoulRipperEnabled)
+                {
+                    yield return Input.KeyPress(Settings.SoulRipperKey);
+                }
 
                 yield return Input.KeyPress(Settings.VmsKey);
             }
@@ -89,10 +92,9 @@ namespace VmsHelper
 
         private IEnumerator CastMoltenShell()
         {
-            if (!Settings.UseMs ||
-                NextMoltenShell > DateTime.Now)
-                yield break;
-            
+            if (!Settings.UseMs) yield break;
+            if (NextMoltenShell > DateTime.Now) yield break;
+
             if (PlayerLifeComponent?.Value?.CurMana < 14) yield break;
             var playerHpPercent = PlayerLifeComponent?.Value?.HPPercentage;
             var playerEsPercent = PlayerLifeComponent?.Value?.ESPercentage;
@@ -141,6 +143,14 @@ namespace VmsHelper
                    VmsActorVaalSkill?.Value?.CurrVaalSouls >= VmsActorVaalSkill?.Value?.VaalSoulsPerUse;
         }
 
+        private bool CanUseSoulRipper()
+        {
+            if (!Settings.SoulRipperEnabled) return false;
+            if (VmsActorVaalSkill?.Value == null) return true; // this offset is often broken
+            return VmsActorVaalSkill?.Value?.CurrVaalSouls >= 1 &&
+                   VmsActorVaalSkill?.Value?.CurrVaalSouls <= 25;
+        }
+        
         private bool CanRun()
         {
             if (!Settings.Enable) return false;
