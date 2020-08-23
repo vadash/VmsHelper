@@ -24,7 +24,7 @@ Copy source to `\PoEHelper\Plugins\Source\VmsHelper`
 
 # setup 
 
-Disable soul catcher slot in Basic Flask Routine
+Disable soul catcher AND sould ripper slot in Basic Flask Routine
 
 ![](https://i.imgur.com/9vIPUHa.png)
 
