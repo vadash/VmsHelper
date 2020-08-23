@@ -20,14 +20,14 @@ namespace VmsHelper
         private DateTime NextMoltenShell { get; set; }
         private DateTime NextArmorFlask { get; set; }
         private DateTime NextSoulCatcherFlask { get; set; }
-        private TimeCache<ActorVaalSkill?>? VmsActorVaalSkill { get; set; }
-        private TimeCache<Life?>? PlayerLifeComponent { get; set; }
+        private TimeCache<ActorVaalSkill> VmsActorVaalSkill { get; set; }
+        private TimeCache<Life> PlayerLifeComponent { get; set; }
         
         public override void OnLoad()
         {
-            VmsActorVaalSkill = new TimeCache<ActorVaalSkill?>(UpdateVms, 5000);
-            PlayerLifeComponent = new TimeCache<Life?>(UpdateLifeComponent, 66);
-            Core.MainRunner.Run(new Coroutine(MainCoroutine(), this, "VmsHelper1"));
+            VmsActorVaalSkill = new TimeCache<ActorVaalSkill>(UpdateVms, 5000);
+            PlayerLifeComponent = new TimeCache<Life>(UpdateLifeComponent, 66);
+            Core.MainRunner.Run(new Coroutine(MainCoroutine(), this, "VmsHelperMain"));
             base.OnLoad();
         }
 
@@ -87,6 +87,7 @@ namespace VmsHelper
                 }
 
                 yield return Input.KeyPress(Settings.VmsKey);
+                NextVaalMoltenShell = DateTime.Now.AddMilliseconds(100);
             }
         }
 
@@ -115,6 +116,7 @@ namespace VmsHelper
                 }
 
                 yield return Input.KeyPress(Settings.MsKey);
+                NextMoltenShell = DateTime.Now.AddMilliseconds(100);
             }
         }
         
