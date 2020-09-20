@@ -52,13 +52,14 @@ namespace VmsHelper
                 }
                 yield return CastVaalHaste();
                 
-                yield return new WaitTime(16); // half server tick
+                yield return new WaitTime(33); // server tick
             }
         }
 
         private IEnumerator CastVaalHaste()
         {
             if (!Settings.UseVaalHaste) yield break;
+            if (NextVaalHaste > DateTime.Now) yield break;
             
             if (Settings.SoulRipperEnabled &&
                 VaalHasteActorVaalSkill?.Value?.CurrVaalSouls < VaalHasteActorVaalSkill?.Value?.VaalSoulsPerUse &&
@@ -79,6 +80,7 @@ namespace VmsHelper
                 }
                 
                 yield return Input.KeyPress(Settings.VaalHasteKey);
+                NextVaalHaste = DateTime.Now.AddMilliseconds(1000);
             }
         }
         
@@ -120,7 +122,7 @@ namespace VmsHelper
                 }
 
                 yield return Input.KeyPress(Settings.VmsKey);
-                NextVaalMoltenShell = DateTime.Now.AddMilliseconds(100);
+                NextVaalMoltenShell = DateTime.Now.AddMilliseconds(1000);
             }
         }
 
@@ -149,7 +151,7 @@ namespace VmsHelper
                 }
 
                 yield return Input.KeyPress(Settings.MsKey);
-                NextMoltenShell = DateTime.Now.AddMilliseconds(100);
+                NextMoltenShell = DateTime.Now.AddMilliseconds(1000);
             }
         }
         
