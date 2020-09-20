@@ -17,16 +17,19 @@ namespace VmsHelper
         private const float MIN_VMS_DURATION = 8.99f;
         private const float MIN_MS_DURATION = 2.99f;
         
+        private DateTime NextVaalHaste { get; set; }
         private DateTime NextVaalMoltenShell { get; set; }
         private DateTime NextMoltenShell { get; set; }
         private DateTime NextArmorFlask { get; set; }
         private DateTime NextSoulCatcherFlask { get; set; }
         private TimeCache<ActorVaalSkill> VmsActorVaalSkill { get; set; }
+        private TimeCache<ActorVaalSkill> VaalHasteActorVaalSkill { get; set; }
         private TimeCache<Life> PlayerLifeComponent { get; set; }
         
         public override void OnLoad()
         {
             VmsActorVaalSkill = new TimeCache<ActorVaalSkill>(UpdateVms, 5000);
+            VaalHasteActorVaalSkill = new TimeCache<ActorVaalSkill>(UpdateVaalHaste, 5000);
             PlayerLifeComponent = new TimeCache<Life>(UpdateLifeComponent, 66);
             Core.MainRunner.Run(new Coroutine(MainCoroutine(), this, "VmsHelperMain"));
             base.OnLoad();
@@ -45,13 +48,40 @@ namespace VmsHelper
                 if (!IsShieldUp())
                 {
                     yield return CastVallMoltenShell();
-                    yield return CastMoltenShell();                    
+                    yield return CastMoltenShell();               
                 }
+                yield return CastVaalHaste();
                 
                 yield return new WaitTime(16); // half server tick
             }
         }
 
+        private IEnumerator CastVaalHaste()
+        {
+            if (!Settings.UseVaalHaste) yield break;
+            
+            if (Settings.SoulRipperEnabled &&
+                VaalHasteActorVaalSkill?.Value?.CurrVaalSouls < VaalHasteActorVaalSkill?.Value?.VaalSoulsPerUse &&
+                CanUseSoulRipperFlask())
+            {
+                yield return Input.KeyPress(Settings.SoulRipperKey);
+                yield return new WaitTime(100);
+            }
+
+            if (IsVaalHasteReady())
+            {
+                if (Settings.SoulCatcherEnabled &&
+                    NextSoulCatcherFlask < DateTime.Now &&
+                    PlayerLifeComponent?.Value?.CurMana > Settings.MinManaSoulCatcherThreshold)
+                {
+                    yield return Input.KeyPress(Settings.SoulCatcherKey);
+                    NextSoulCatcherFlask = DateTime.Now.AddMilliseconds(4000);
+                }
+                
+                yield return Input.KeyPress(Settings.VaalHasteKey);
+            }
+        }
+        
         private IEnumerator CastVallMoltenShell()
         {
             if (!Settings.UseVms) yield break;
@@ -62,10 +92,10 @@ namespace VmsHelper
             var playerEsPercent = PlayerLifeComponent?.Value?.ESPercentage;
 
             var hpCondition = Settings.VmsMinHpPercentThreshold > 0 &&
-                              playerHpPercent < Settings.VmsMinHpPercentThreshold / 100d;
+                              playerHpPercent - 1 < Settings.VmsMinHpPercentThreshold / 100d;
             
             var esCondition = Settings.VmsMinEsPercentThreshold > 0 &&
-                              playerEsPercent < Settings.VmsMinEsPercentThreshold / 100d;
+                              playerEsPercent - 1 < Settings.VmsMinEsPercentThreshold / 100d;
             
             if (hpCondition || esCondition)
             {
@@ -104,10 +134,10 @@ namespace VmsHelper
             var playerEsPercent = PlayerLifeComponent?.Value?.ESPercentage;
 
             var hpCondition = Settings.MsMinHpPercentThreshold > 0 &&
-                              playerHpPercent < Settings.MsMinHpPercentThreshold / 100d;
+                              playerHpPercent - 1 < Settings.MsMinHpPercentThreshold / 100d;
             
             var esCondition = Settings.MsMinEsPercentThreshold > 0 &&
-                              playerEsPercent < Settings.MsMinEsPercentThreshold / 100d;
+                              playerEsPercent - 1 < Settings.MsMinEsPercentThreshold / 100d;
             
             if (hpCondition || esCondition)
             {
@@ -146,6 +176,12 @@ namespace VmsHelper
         {
             return VmsActorVaalSkill?.Value == null || // this offset is often broken
                    VmsActorVaalSkill?.Value?.CurrVaalSouls >= VmsActorVaalSkill?.Value?.VaalSoulsPerUse;
+        }
+        
+        private bool IsVaalHasteReady()
+        {
+            return VaalHasteActorVaalSkill?.Value == null || // this offset is often broken
+                   VaalHasteActorVaalSkill?.Value?.CurrVaalSouls >= VaalHasteActorVaalSkill?.Value?.VaalSoulsPerUse;
         }
 
         private bool CanUseSoulRipperFlask()

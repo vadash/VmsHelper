@@ -44,6 +44,16 @@ namespace VmsHelper
 
         #endregion
 
+        #region Vaal Haste
+
+        [Menu("Use Vaal Haste")]
+        public ToggleNode UseVaalHaste { get; set; } = new ToggleNode(true);
+        
+        [Menu("Vaal Haste key")]
+        public HotkeyNode VaalHasteKey { get; set; } = new HotkeyNode(Keys.T);
+
+        #endregion
+        
         #region Flasks
 
         [Menu("Granite flask enabled")]
