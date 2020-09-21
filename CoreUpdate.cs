@@ -2,6 +2,7 @@
 using ExileCore;
 using ExileCore.PoEMemory.Components;
 using ExileCore.PoEMemory.MemoryObjects;
+// ReSharper disable ConstantConditionalAccessQualifier
 
 namespace VmsHelper
 {
@@ -9,22 +10,37 @@ namespace VmsHelper
     {
         private ActorVaalSkill UpdateVms()
         {
-            var actorVaalSkills = GameController?.Player?.GetComponent<Actor>()?.ActorVaalSkills;
-            return actorVaalSkills?.FirstOrDefault(s => s?.VaalSkillInternalName == "vaal_molten_shell");
+            return GetVaalSkill("vaal_molten_shell");
         }
-        
+       
         private ActorVaalSkill UpdateVaalHaste()
         {
-            var actorVaalSkills = GameController?.Player?.GetComponent<Actor>()?.ActorVaalSkills;
-            return actorVaalSkills?.FirstOrDefault(s => s?.VaalSkillInternalName == "vaal_haste");
+            return GetVaalSkill("vaal_haste");
         }
 
         private ActorVaalSkill UpdateVaalGrace()
         {
-            var actorVaalSkills = GameController?.Player?.GetComponent<Actor>()?.ActorVaalSkills;
-            return actorVaalSkills?.FirstOrDefault(s => s?.VaalSkillInternalName == "vaal_grace");
+            return GetVaalSkill("vaal_grace");
         }
         
         private Life UpdateLifeComponent() => GameController?.Player?.GetComponent<Life>();
+        
+        private ActorVaalSkill GetVaalSkill(string internalName)
+        {
+            var actorSkill = GameController
+                ?.Player
+                ?.GetComponent<Actor>()
+                ?.ActorSkills
+                ?.FirstOrDefault(s =>
+                    s?.InternalName == internalName);
+            if (actorSkill?.IsOnSkillBar != true) return null;
+            var actorVaalSkill = GameController
+                ?.Player
+                ?.GetComponent<Actor>()
+                ?.ActorVaalSkills
+                ?.FirstOrDefault(s =>
+                    s?.VaalSkillInternalName == internalName);
+            return actorVaalSkill;
+        }
     }
 }
