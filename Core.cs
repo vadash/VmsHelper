@@ -7,7 +7,10 @@ using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared;
 using ExileCore.Shared.Cache;
 using ExileCore.Shared.Enums;
-
+using SharpDX;
+// ReSharper disable ConstantConditionalAccessQualifier
+// ReSharper disable RedundantExtendsListEntry
+// ReSharper disable UnusedType.Global
 // ReSharper disable ConstantNullCoalescingCondition
 // ReSharper disable IteratorNeverReturns
 
@@ -57,16 +60,19 @@ namespace VmsHelper
                 yield return new WaitTime(33); // server tick
             }
         }
-        
+
         private IEnumerator CastVaalGrace()
         {
             if (!Settings.UseVaalGrace) yield break;
             if (NextVaalGrace > DateTime.Now) yield break;
+            if (VaalGraceActorVaalSkill.Value == null) yield break;
             yield return UseSoulRipper(VaalGraceActorVaalSkill);
             var hpCondition = Settings.VaalGraceMinHpPercentThreshold > 0 &&
-                              PlayerLifeComponent?.Value?.HPPercentage - 1 < Settings.VaalGraceMinHpPercentThreshold / 100d;
+                              PlayerLifeComponent?.Value?.CurHP < PlayerLifeComponent?.Value?.MaxHP
+                              * Settings.VaalGraceMinHpPercentThreshold / 100d;
             var esCondition = Settings.VaalGraceMinEsPercentThreshold > 0 &&
-                              PlayerLifeComponent?.Value?.ESPercentage - 1 < Settings.VaalGraceMinEsPercentThreshold / 100d;
+                              PlayerLifeComponent?.Value?.CurES < PlayerLifeComponent?.Value?.MaxES
+                              * Settings.VaalGraceMinEsPercentThreshold / 100d;
             if (!hpCondition && !esCondition) yield break;
             if (IsVaalSkillReady(VaalGraceActorVaalSkill))
             {
@@ -75,11 +81,12 @@ namespace VmsHelper
                 NextVaalGrace = DateTime.Now.AddMilliseconds(1000);
             }
         }
-        
+
         private IEnumerator CastVaalHaste()
         {
             if (!Settings.UseVaalHaste) yield break;
             if (NextVaalHaste > DateTime.Now) yield break;
+            if (VaalHasteActorVaalSkill.Value == null) yield break;
             yield return UseSoulRipper(VaalHasteActorVaalSkill);
             if (IsVaalSkillReady(VaalHasteActorVaalSkill))
             {
@@ -93,12 +100,15 @@ namespace VmsHelper
         {
             if (!Settings.UseVms) yield break;
             if (NextVaalMoltenShell > DateTime.Now) yield break;
+            if (VmsActorVaalSkill.Value == null) yield break;
             if (IsShieldUp()) yield break;
             yield return UseSoulRipper(VmsActorVaalSkill);
             var hpCondition = Settings.VmsMinHpPercentThreshold > 0 &&
-                              PlayerLifeComponent?.Value?.HPPercentage - 1 < Settings.VmsMinHpPercentThreshold / 100d;
+                              PlayerLifeComponent?.Value?.CurHP < PlayerLifeComponent?.Value?.MaxHP
+                              * Settings.VmsMinHpPercentThreshold / 100d;
             var esCondition = Settings.VmsMinEsPercentThreshold > 0 &&
-                              PlayerLifeComponent?.Value?.ESPercentage - 1 < Settings.VmsMinEsPercentThreshold / 100d;
+                              PlayerLifeComponent?.Value?.CurES < PlayerLifeComponent?.Value?.MaxES
+                              * Settings.VmsMinEsPercentThreshold / 100d;
             if (!hpCondition && !esCondition) yield break;
             if (IsVaalSkillReady(VmsActorVaalSkill))
             {
@@ -116,9 +126,11 @@ namespace VmsHelper
             if (PlayerLifeComponent?.Value?.CurMana < 14) yield break;
             if (IsShieldUp()) yield break;
             var hpCondition = Settings.MsMinHpPercentThreshold > 0 &&
-                              PlayerLifeComponent?.Value?.HPPercentage - 1 < Settings.MsMinHpPercentThreshold / 100d;
+                              PlayerLifeComponent?.Value?.CurHP < PlayerLifeComponent?.Value?.MaxHP
+                              * Settings.MsMinHpPercentThreshold / 100d;
             var esCondition = Settings.MsMinEsPercentThreshold > 0 &&
-                              PlayerLifeComponent?.Value?.ESPercentage - 1 < Settings.MsMinEsPercentThreshold / 100d;
+                              PlayerLifeComponent?.Value?.CurES < PlayerLifeComponent?.Value?.MaxES
+                              * Settings.MsMinEsPercentThreshold / 100d;
             if (!hpCondition && !esCondition) yield break;
             yield return UseGraniteFlask();
             yield return Input.KeyPress(Settings.MsKey);
