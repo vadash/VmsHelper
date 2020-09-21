@@ -8,6 +8,7 @@ using ExileCore.Shared;
 using ExileCore.Shared.Cache;
 using ExileCore.Shared.Enums;
 
+// ReSharper disable ConstantNullCoalescingCondition
 // ReSharper disable IteratorNeverReturns
 
 namespace VmsHelper
@@ -18,18 +19,21 @@ namespace VmsHelper
         private const float MIN_MS_DURATION = 2.99f;
         
         private DateTime NextVaalHaste { get; set; }
+        private DateTime NextVaalGrace { get; set; }
         private DateTime NextVaalMoltenShell { get; set; }
         private DateTime NextMoltenShell { get; set; }
         private DateTime NextArmorFlask { get; set; }
         private DateTime NextSoulCatcherFlask { get; set; }
         private TimeCache<ActorVaalSkill> VmsActorVaalSkill { get; set; }
         private TimeCache<ActorVaalSkill> VaalHasteActorVaalSkill { get; set; }
+        private TimeCache<ActorVaalSkill> VaalGraceActorVaalSkill { get; set; }
         private TimeCache<Life> PlayerLifeComponent { get; set; }
         
         public override void OnLoad()
         {
             VmsActorVaalSkill = new TimeCache<ActorVaalSkill>(UpdateVms, 5000);
             VaalHasteActorVaalSkill = new TimeCache<ActorVaalSkill>(UpdateVaalHaste, 5000);
+            VaalGraceActorVaalSkill = new TimeCache<ActorVaalSkill>(UpdateVaalGrace, 5000);
             PlayerLifeComponent = new TimeCache<Life>(UpdateLifeComponent, 66);
             Core.MainRunner.Run(new Coroutine(MainCoroutine(), this, "VmsHelperMain"));
             base.OnLoad();
@@ -45,82 +49,61 @@ namespace VmsHelper
                     continue;
                 }
 
-                if (!IsShieldUp())
-                {
-                    yield return CastVallMoltenShell();
-                    yield return CastMoltenShell();               
-                }
+                yield return CastVallMoltenShell();
+                yield return CastMoltenShell();
                 yield return CastVaalHaste();
+                yield return CastVaalGrace();
                 
                 yield return new WaitTime(33); // server tick
             }
         }
-
+        
+        private IEnumerator CastVaalGrace()
+        {
+            if (!Settings.UseVaalGrace) yield break;
+            if (NextVaalGrace > DateTime.Now) yield break;
+            yield return UseSoulRipper(VaalGraceActorVaalSkill);
+            var hpCondition = Settings.VaalGraceMinHpPercentThreshold > 0 &&
+                              PlayerLifeComponent?.Value?.HPPercentage - 1 < Settings.VaalGraceMinHpPercentThreshold / 100d;
+            var esCondition = Settings.VaalGraceMinEsPercentThreshold > 0 &&
+                              PlayerLifeComponent?.Value?.ESPercentage - 1 < Settings.VaalGraceMinEsPercentThreshold / 100d;
+            if (!hpCondition && !esCondition) yield break;
+            if (IsVaalSkillReady(VaalGraceActorVaalSkill))
+            {
+                yield return UseSoulCatcher();
+                yield return Input.KeyPress(Settings.VaalGraceKey);
+                NextVaalGrace = DateTime.Now.AddMilliseconds(1000);
+            }
+        }
+        
         private IEnumerator CastVaalHaste()
         {
             if (!Settings.UseVaalHaste) yield break;
             if (NextVaalHaste > DateTime.Now) yield break;
-            
-            if (Settings.SoulRipperEnabled &&
-                VaalHasteActorVaalSkill?.Value?.CurrVaalSouls < VaalHasteActorVaalSkill?.Value?.VaalSoulsPerUse &&
-                CanUseSoulRipperFlask())
+            yield return UseSoulRipper(VaalHasteActorVaalSkill);
+            if (IsVaalSkillReady(VaalHasteActorVaalSkill))
             {
-                yield return Input.KeyPress(Settings.SoulRipperKey);
-                yield return new WaitTime(100);
-            }
-
-            if (IsVaalHasteReady())
-            {
-                if (Settings.SoulCatcherEnabled &&
-                    NextSoulCatcherFlask < DateTime.Now &&
-                    PlayerLifeComponent?.Value?.CurMana > Settings.MinManaSoulCatcherThreshold)
-                {
-                    yield return Input.KeyPress(Settings.SoulCatcherKey);
-                    NextSoulCatcherFlask = DateTime.Now.AddMilliseconds(4000);
-                }
-                
+                yield return UseSoulCatcher();
                 yield return Input.KeyPress(Settings.VaalHasteKey);
                 NextVaalHaste = DateTime.Now.AddMilliseconds(1000);
             }
         }
-        
+
         private IEnumerator CastVallMoltenShell()
         {
             if (!Settings.UseVms) yield break;
             if (NextVaalMoltenShell > DateTime.Now) yield break;
-            if (!IsVmsReady() && !CanUseSoulRipperFlask()) yield break;
-
-            var playerHpPercent = PlayerLifeComponent?.Value?.HPPercentage;
-            var playerEsPercent = PlayerLifeComponent?.Value?.ESPercentage;
-
+            if (IsShieldUp()) yield break;
+            yield return UseSoulRipper(VmsActorVaalSkill);
             var hpCondition = Settings.VmsMinHpPercentThreshold > 0 &&
-                              playerHpPercent - 1 < Settings.VmsMinHpPercentThreshold / 100d;
-            
+                              PlayerLifeComponent?.Value?.HPPercentage - 1 < Settings.VmsMinHpPercentThreshold / 100d;
             var esCondition = Settings.VmsMinEsPercentThreshold > 0 &&
-                              playerEsPercent - 1 < Settings.VmsMinEsPercentThreshold / 100d;
-            
-            if (hpCondition || esCondition)
+                              PlayerLifeComponent?.Value?.ESPercentage - 1 < Settings.VmsMinEsPercentThreshold / 100d;
+            if (!hpCondition && !esCondition) yield break;
+            if (IsVaalSkillReady(VmsActorVaalSkill))
             {
-                if (Settings.GraniteFlaskEnabled &&
-                    NextArmorFlask < DateTime.Now)
-                {
-                    yield return Input.KeyPress(Settings.GraniteFlaskKey);
-                    NextArmorFlask = DateTime.Now.AddMilliseconds(4800);
-                }
-                if (Settings.SoulCatcherEnabled &&
-                    NextSoulCatcherFlask < DateTime.Now &&
-                    PlayerLifeComponent?.Value?.CurMana > Settings.MinManaSoulCatcherThreshold)
-                {
-                    yield return Input.KeyPress(Settings.SoulCatcherKey);
-                    NextSoulCatcherFlask = DateTime.Now.AddMilliseconds(4000);
-                }
-                if (Settings.SoulRipperEnabled &&
-                    !IsVmsReady() &&
-                    CanUseSoulRipperFlask())
-                {
-                    yield return Input.KeyPress(Settings.SoulRipperKey);
-                }
-
+                yield return UseGraniteFlask();
+                yield return UseSoulCatcher();
                 yield return Input.KeyPress(Settings.VmsKey);
                 NextVaalMoltenShell = DateTime.Now.AddMilliseconds(1000);
             }
@@ -130,29 +113,16 @@ namespace VmsHelper
         {
             if (!Settings.UseMs) yield break;
             if (NextMoltenShell > DateTime.Now) yield break;
-
             if (PlayerLifeComponent?.Value?.CurMana < 14) yield break;
-            var playerHpPercent = PlayerLifeComponent?.Value?.HPPercentage;
-            var playerEsPercent = PlayerLifeComponent?.Value?.ESPercentage;
-
+            if (IsShieldUp()) yield break;
             var hpCondition = Settings.MsMinHpPercentThreshold > 0 &&
-                              playerHpPercent - 1 < Settings.MsMinHpPercentThreshold / 100d;
-            
+                              PlayerLifeComponent?.Value?.HPPercentage - 1 < Settings.MsMinHpPercentThreshold / 100d;
             var esCondition = Settings.MsMinEsPercentThreshold > 0 &&
-                              playerEsPercent - 1 < Settings.MsMinEsPercentThreshold / 100d;
-            
-            if (hpCondition || esCondition)
-            {
-                if (Settings.GraniteFlaskEnabled &&
-                    NextArmorFlask < DateTime.Now)
-                {
-                    yield return Input.KeyPress(Settings.GraniteFlaskKey);
-                    NextArmorFlask = DateTime.Now.AddMilliseconds(4800);
-                }
-
-                yield return Input.KeyPress(Settings.MsKey);
-                NextMoltenShell = DateTime.Now.AddMilliseconds(1000);
-            }
+                              PlayerLifeComponent?.Value?.ESPercentage - 1 < Settings.MsMinEsPercentThreshold / 100d;
+            if (!hpCondition && !esCondition) yield break;
+            yield return UseGraniteFlask();
+            yield return Input.KeyPress(Settings.MsKey);
+            NextMoltenShell = DateTime.Now.AddMilliseconds(1000);
         }
         
         private bool IsShieldUp()
@@ -174,20 +144,47 @@ namespace VmsHelper
             return shield != null;
         }
 
-        private bool IsVmsReady()
+        
+        private IEnumerator UseSoulRipper(CachedValue<ActorVaalSkill> vaalSkill)
         {
-            return VmsActorVaalSkill?.Value == null || // this offset is often broken
-                   VmsActorVaalSkill?.Value?.CurrVaalSouls >= VmsActorVaalSkill?.Value?.VaalSoulsPerUse;
+            if (vaalSkill?.Value?.CurrVaalSouls < vaalSkill?.Value?.VaalSoulsPerUse &&
+                CanUseSoulRipperFlask())
+            {
+                yield return Input.KeyPress(Settings.SoulRipperKey);
+                yield return new WaitTime(66);
+            }
         }
         
-        private bool IsVaalHasteReady()
+        private IEnumerator UseSoulCatcher()
         {
-            return VaalHasteActorVaalSkill?.Value == null || // this offset is often broken
-                   VaalHasteActorVaalSkill?.Value?.CurrVaalSouls >= VaalHasteActorVaalSkill?.Value?.VaalSoulsPerUse;
+            if (Settings.SoulCatcherEnabled &&
+                NextSoulCatcherFlask < DateTime.Now &&
+                PlayerLifeComponent?.Value?.CurMana > Settings.MinManaSoulCatcherThreshold)
+            {
+                yield return Input.KeyPress(Settings.SoulCatcherKey);
+                NextSoulCatcherFlask = DateTime.Now.AddMilliseconds(4000);
+            }
         }
-
+        
+        private IEnumerator UseGraniteFlask()
+        {
+            if (Settings.GraniteFlaskEnabled &&
+                NextArmorFlask < DateTime.Now)
+            {
+                yield return Input.KeyPress(Settings.GraniteFlaskKey);
+                NextArmorFlask = DateTime.Now.AddMilliseconds(4800);
+            }
+        }
+        
+        private static bool IsVaalSkillReady(CachedValue<ActorVaalSkill> vaalSkill)
+        {
+            return vaalSkill?.Value == null || // this offset is often broken
+                   vaalSkill?.Value?.CurrVaalSouls >= vaalSkill?.Value?.VaalSoulsPerUse;
+        }
+        
         private bool CanUseSoulRipperFlask()
         {
+            if (!Settings.SoulRipperEnabled) return false;
             var currentFlask = GameController
                 ?.Game
                 ?.IngameState

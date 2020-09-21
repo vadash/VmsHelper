@@ -15,7 +15,7 @@ namespace VmsHelper
         #region VMS
 
         [Menu("Use VMS")]
-        public ToggleNode UseVms { get; set; } = new ToggleNode(true);
+        public ToggleNode UseVms { get; set; } = new ToggleNode(false);
         
         [Menu("VMS key")]
         public HotkeyNode VmsKey { get; set; } = new HotkeyNode(Keys.R);
@@ -31,7 +31,7 @@ namespace VmsHelper
         #region MS
 
         [Menu("Use MS")]
-        public ToggleNode UseMs { get; set; } = new ToggleNode(true);
+        public ToggleNode UseMs { get; set; } = new ToggleNode(false);
         
         [Menu("MS key")]
         public HotkeyNode MsKey { get; set; } = new HotkeyNode(Keys.T);
@@ -47,10 +47,26 @@ namespace VmsHelper
         #region Vaal Haste
 
         [Menu("Use Vaal Haste")]
-        public ToggleNode UseVaalHaste { get; set; } = new ToggleNode(true);
+        public ToggleNode UseVaalHaste { get; set; } = new ToggleNode(false);
         
         [Menu("Vaal Haste key")]
         public HotkeyNode VaalHasteKey { get; set; } = new HotkeyNode(Keys.T);
+
+        #endregion
+        
+        #region Vaal Grace
+
+        [Menu("Use Vaal Grace")]
+        public ToggleNode UseVaalGrace { get; set; } = new ToggleNode(false);
+        
+        [Menu("Vaal Grace key")]
+        public HotkeyNode VaalGraceKey { get; set; } = new HotkeyNode(Keys.T);
+
+        [Menu("Min HP to activate Vaal Grace (percent, set to 0 to disable)")]
+        public RangeNode<int> VaalGraceMinHpPercentThreshold { get; set; } = new RangeNode<int>(95, 0, 100);
+        
+        [Menu("Min ES to activate Vaal Grace (percent, set to 0 to disable)")]
+        public RangeNode<int> VaalGraceMinEsPercentThreshold { get; set; } = new RangeNode<int>(95, 0, 100);
 
         #endregion
         

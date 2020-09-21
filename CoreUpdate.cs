@@ -19,6 +19,12 @@ namespace VmsHelper
             return actorVaalSkills?.FirstOrDefault(s => s?.VaalSkillInternalName == "vaal_haste");
         }
 
+        private ActorVaalSkill UpdateVaalGrace()
+        {
+            var actorVaalSkills = GameController?.Player?.GetComponent<Actor>()?.ActorVaalSkills;
+            return actorVaalSkills?.FirstOrDefault(s => s?.VaalSkillInternalName == "vaal_grace");
+        }
+        
         private Life UpdateLifeComponent() => GameController?.Player?.GetComponent<Life>();
     }
 }
