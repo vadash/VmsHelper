@@ -46,17 +46,14 @@ namespace VmsHelper
         {
             while (true)
             {
-                if (!CanRun())
+                if (CanRun())
                 {
-                    yield return new WaitTime(500);
-                    continue;
+                    yield return CastVallMoltenShell();
+                    yield return CastMoltenShell();
+                    yield return CastVaalHaste();
+                    yield return CastVaalGrace();
                 }
 
-                yield return CastVallMoltenShell();
-                yield return CastMoltenShell();
-                yield return CastVaalHaste();
-                yield return CastVaalGrace();
-                
                 yield return new WaitTime(33); // server tick
             }
         }
@@ -217,6 +214,8 @@ namespace VmsHelper
             if (!Settings.Enable) return false;
             if (GameController?.InGame == false) return false;
             if (GameController?.Area?.CurrentArea?.IsTown == true) return false;
+            if (GameController?.Area?.CurrentArea?.IsHideout == true) return false;
+            if (GameController?.Area?.CurrentArea?.HasWaypoint == true) return false;
             if (MenuWindow.IsOpened) return false;
             if (GameController?.Entities?.Count == 0) return false;
             if (GameController?.IsForeGroundCache == false) return false;
