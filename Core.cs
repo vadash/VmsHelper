@@ -215,7 +215,6 @@ namespace VmsHelper
             if (GameController?.InGame == false) return false;
             if (GameController?.Area?.CurrentArea?.IsTown == true) return false;
             if (GameController?.Area?.CurrentArea?.IsHideout == true) return false;
-            if (GameController?.Area?.CurrentArea?.HasWaypoint == true) return false;
             if (MenuWindow.IsOpened) return false;
             if (GameController?.Entities?.Count == 0) return false;
             if (GameController?.IsForeGroundCache == false) return false;
