@@ -22,11 +22,13 @@ namespace VmsHelper
         private const float MIN_MS_DURATION = 2.99f;
         
         private DateTime NextVaalHaste { get; set; }
+        private DateTime NextVaalD { get; set; }
         private DateTime NextVaalGrace { get; set; }
         private DateTime NextVaalMoltenShell { get; set; }
         private DateTime NextMoltenShell { get; set; }
         private DateTime NextArmorFlask { get; set; }
         private DateTime NextSoulCatcherFlask { get; set; }
+        private TimeCache<ActorVaalSkill> VaalDActorVaalSkill { get; set; }
         private TimeCache<ActorVaalSkill> VmsActorVaalSkill { get; set; }
         private TimeCache<ActorVaalSkill> VaalHasteActorVaalSkill { get; set; }
         private TimeCache<ActorVaalSkill> VaalGraceActorVaalSkill { get; set; }
@@ -34,6 +36,7 @@ namespace VmsHelper
         
         public override void OnLoad()
         {
+            VaalDActorVaalSkill = new TimeCache<ActorVaalSkill>(UpdateVaalD, 5000);
             VmsActorVaalSkill = new TimeCache<ActorVaalSkill>(UpdateVms, 5000);
             VaalHasteActorVaalSkill = new TimeCache<ActorVaalSkill>(UpdateVaalHaste, 5000);
             VaalGraceActorVaalSkill = new TimeCache<ActorVaalSkill>(UpdateVaalGrace, 5000);
@@ -48,6 +51,7 @@ namespace VmsHelper
             {
                 if (CanRun())
                 {
+                    yield return CastVaalD();
                     yield return CastVallMoltenShell();
                     yield return CastMoltenShell();
                     yield return CastVaalHaste();
@@ -55,6 +59,24 @@ namespace VmsHelper
                 }
 
                 yield return new WaitTime(33); // server tick
+            }
+        }
+
+        private IEnumerator CastVaalD()
+        {
+            if (!Settings.UseVaalD) yield break;
+            if (NextVaalD > DateTime.Now) yield break;
+            if (VaalDActorVaalSkill.Value == null) yield break;
+            yield return UseSoulRipper(VaalDActorVaalSkill);
+            var esCondition = Settings.VaalDMinEsPercentThreshold > 0 &&
+                              PlayerLifeComponent?.Value?.CurES < PlayerLifeComponent?.Value?.MaxES
+                              * Settings.VaalDMinEsPercentThreshold / 100d;
+            if (!esCondition) yield break;
+            if (IsVaalSkillReady(VaalDActorVaalSkill))
+            {
+                yield return UseSoulCatcher();
+                yield return Input.KeyPress(Settings.VaalDKey);
+                NextVaalD = DateTime.Now.AddMilliseconds(1000);
             }
         }
 

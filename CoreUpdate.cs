@@ -22,6 +22,11 @@ namespace VmsHelper
         {
             return GetVaalSkill("vaal_grace");
         }
+
+        private ActorVaalSkill UpdateVaalD()
+        {
+            return GetVaalSkill("vaal_discipline");
+        }
         
         private Life UpdateLifeComponent() => GameController?.Player?.GetComponent<Life>();
         

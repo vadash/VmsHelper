@@ -70,6 +70,19 @@ namespace VmsHelper
 
         #endregion
         
+        #region Vaal D
+
+        [Menu("Use Vaal Discipline")]
+        public ToggleNode UseVaalD { get; set; } = new ToggleNode(false);
+        
+        [Menu("Vaal Discipline key")]
+        public HotkeyNode VaalDKey { get; set; } = new HotkeyNode(Keys.W);
+
+        [Menu("Min ES to activate Vaal Discipline (percent, set to 0 to disable)")]
+        public RangeNode<int> VaalDMinEsPercentThreshold { get; set; } = new RangeNode<int>(40, 0, 100);
+
+        #endregion
+        
         #region Flasks
 
         [Menu("Granite flask enabled")]
