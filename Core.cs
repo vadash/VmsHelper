@@ -175,10 +175,11 @@ namespace VmsHelper
             return shield != null;
         }
 
-        
         private IEnumerator UseSoulRipper(CachedValue<ActorVaalSkill> vaalSkill)
         {
-            if (vaalSkill?.Value?.CurrVaalSouls < vaalSkill?.Value?.VaalSoulsPerUse &&
+            // use when we have 1..37 souls
+            if (vaalSkill?.Value?.CurrVaalSouls > 0 &&
+                vaalSkill?.Value?.CurrVaalSouls < 3 * vaalSkill?.Value?.VaalSoulsPerUse / 4 &&
                 CanUseSoulRipperFlask())
             {
                 yield return Input.KeyPress(Settings.SoulRipperKey);
