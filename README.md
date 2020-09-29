@@ -1,6 +1,6 @@
 # Features
 
-All you need for utility vaal skills
+All you need for utility vaal skills (VMS, MS, Haste, Grace, Discipline)
 
 # install
 
