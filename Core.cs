@@ -51,11 +51,20 @@ namespace VmsHelper
             {
                 if (CanRun())
                 {
-                    yield return CastVaalD();
                     yield return CastVallMoltenShell();
                     yield return CastMoltenShell();
-                    yield return CastVaalHaste();
+                    yield return CastVaalD();
                     yield return CastVaalGrace();
+                    if ((VmsActorVaalSkill.Value == null ||
+                         VmsActorVaalSkill.Value.CurrVaalSouls == VmsActorVaalSkill.Value.VaalMaxSouls) &&
+                        (VaalDActorVaalSkill.Value == null ||
+                         VaalDActorVaalSkill.Value.CurrVaalSouls == VaalDActorVaalSkill.Value.VaalMaxSouls) &&
+                        (VaalGraceActorVaalSkill.Value == null ||
+                         VaalGraceActorVaalSkill.Value.CurrVaalSouls == VaalGraceActorVaalSkill.Value.VaalMaxSouls))
+                    {
+                        // Cast haste only when other vaal skills are charged
+                        yield return CastVaalHaste();
+                    }
                 }
 
                 yield return new WaitTime(33); // server tick
