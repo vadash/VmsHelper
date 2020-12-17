@@ -28,6 +28,7 @@ namespace VmsHelper
         private DateTime NextMoltenShell { get; set; }
         private DateTime NextArmorFlask { get; set; }
         private DateTime NextSoulCatcherFlask { get; set; }
+        private DateTime NextSoulRipperFlask { get; set; }
         private TimeCache<ActorVaalSkill> VaalDActorVaalSkill { get; set; }
         private TimeCache<ActorVaalSkill> VmsActorVaalSkill { get; set; }
         private TimeCache<ActorVaalSkill> VaalHasteActorVaalSkill { get; set; }
@@ -187,12 +188,13 @@ namespace VmsHelper
         private IEnumerator UseSoulRipper(CachedValue<ActorVaalSkill> vaalSkill)
         {
             // use when we have 1..37 souls
-            if (vaalSkill?.Value?.CurrVaalSouls > 0 &&
-                vaalSkill?.Value?.CurrVaalSouls < 3 * vaalSkill?.Value?.VaalSoulsPerUse / 4 &&
-                CanUseSoulRipperFlask())
+            if (Settings.SoulRipperEnabled &&
+                NextSoulRipperFlask < DateTime.Now &&
+                vaalSkill?.Value?.CurrVaalSouls > 0 &&
+                vaalSkill?.Value?.CurrVaalSouls < 3 * vaalSkill?.Value?.VaalSoulsPerUse / 4)
             {
                 yield return Input.KeyPress(Settings.SoulRipperKey);
-                yield return new WaitTime(66);
+                NextSoulRipperFlask = DateTime.Now.AddMilliseconds(2000);
             }
         }
         
@@ -222,25 +224,7 @@ namespace VmsHelper
             return vaalSkill?.Value == null || // this offset is often broken
                    vaalSkill?.Value?.CurrVaalSouls >= vaalSkill?.Value?.VaalSoulsPerUse;
         }
-        
-        private bool CanUseSoulRipperFlask()
-        {
-            if (!Settings.SoulRipperEnabled) return false;
-            var currentFlask = GameController
-                ?.Game
-                ?.IngameState
-                ?.ServerData
-                ?.PlayerInventories
-                ?.FirstOrDefault(x => 
-                    x?.Inventory?.InventType == InventoryTypeE.Flask)?.Inventory?.InventorySlotItems?.FirstOrDefault(x =>
-                        x?.Item?.Path == @"Metadata/Items/Flasks/FlaskUtility8" &&
-                        x?.Item?.GetComponent<RenderItem>().ResourcePath == @"Art/2DItems/Flasks/SoulRipper.dds")
-                ?.Item;
-            var flaskChargesStruct = currentFlask?.GetComponent<Charges>();
-            var maxCharges = flaskChargesStruct?.ChargesMax + currentFlask?.GetComponent<Mods>()?.ItemMods[1].Value1;
-            return flaskChargesStruct?.NumCharges == maxCharges;
-        }
-        
+       
         private bool CanRun()
         {
             if (!Settings.Enable) return false;
