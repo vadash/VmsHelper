@@ -77,7 +77,7 @@ namespace VmsHelper
             if (!Settings.UseVaalD) yield break;
             if (NextVaalD > DateTime.Now) yield break;
             if (VaalDActorVaalSkill.Value == null) yield break;
-            yield return UseSoulRipper(VaalDActorVaalSkill);
+            yield return UseSoulRipper();
             var esCondition = Settings.VaalDMinEsPercentThreshold > 0 &&
                               PlayerLifeComponent?.Value?.CurES < PlayerLifeComponent?.Value?.MaxES
                               * Settings.VaalDMinEsPercentThreshold / 100d;
@@ -86,7 +86,7 @@ namespace VmsHelper
             {
                 yield return UseSoulCatcher();
                 yield return Input.KeyPress(Settings.VaalDKey);
-                NextVaalD = DateTime.Now.AddMilliseconds(1000);
+                NextVaalD = DateTime.Now.AddMilliseconds(new Random().Next(900, 1100));
             }
         }
 
@@ -95,7 +95,7 @@ namespace VmsHelper
             if (!Settings.UseVaalGrace) yield break;
             if (NextVaalGrace > DateTime.Now) yield break;
             if (VaalGraceActorVaalSkill.Value == null) yield break;
-            yield return UseSoulRipper(VaalGraceActorVaalSkill);
+            yield return UseSoulRipper();
             var hpCondition = Settings.VaalGraceMinHpPercentThreshold > 0 &&
                               PlayerLifeComponent?.Value?.CurHP < PlayerLifeComponent?.Value?.MaxHP
                               * Settings.VaalGraceMinHpPercentThreshold / 100d;
@@ -107,7 +107,7 @@ namespace VmsHelper
             {
                 yield return UseSoulCatcher();
                 yield return Input.KeyPress(Settings.VaalGraceKey);
-                NextVaalGrace = DateTime.Now.AddMilliseconds(1000);
+                NextVaalGrace = DateTime.Now.AddMilliseconds(new Random().Next(900, 1100));
             }
         }
 
@@ -116,12 +116,12 @@ namespace VmsHelper
             if (!Settings.UseVaalHaste) yield break;
             if (NextVaalHaste > DateTime.Now) yield break;
             if (VaalHasteActorVaalSkill.Value == null) yield break;
-            yield return UseSoulRipper(VaalHasteActorVaalSkill);
+            yield return UseSoulRipper();
             if (IsVaalSkillReady(VaalHasteActorVaalSkill))
             {
                 yield return UseSoulCatcher();
                 yield return Input.KeyPress(Settings.VaalHasteKey);
-                NextVaalHaste = DateTime.Now.AddMilliseconds(1000);
+                NextVaalHaste = DateTime.Now.AddMilliseconds(new Random().Next(900, 1100));
             }
         }
 
@@ -131,7 +131,7 @@ namespace VmsHelper
             if (NextVaalMoltenShell > DateTime.Now) yield break;
             if (VmsActorVaalSkill.Value == null) yield break;
             if (IsShieldUp()) yield break;
-            yield return UseSoulRipper(VmsActorVaalSkill);
+            yield return UseSoulRipper();
             var hpCondition = Settings.VmsMinHpPercentThreshold > 0 &&
                               PlayerLifeComponent?.Value?.CurHP < PlayerLifeComponent?.Value?.MaxHP
                               * Settings.VmsMinHpPercentThreshold / 100d;
@@ -144,7 +144,7 @@ namespace VmsHelper
                 yield return UseGraniteFlask();
                 yield return UseSoulCatcher();
                 yield return Input.KeyPress(Settings.VmsKey);
-                NextVaalMoltenShell = DateTime.Now.AddMilliseconds(1000);
+                NextVaalMoltenShell = DateTime.Now.AddMilliseconds(new Random().Next(900, 1100));
             }
         }
 
@@ -163,7 +163,7 @@ namespace VmsHelper
             if (!hpCondition && !esCondition) yield break;
             yield return UseGraniteFlask();
             yield return Input.KeyPress(Settings.MsKey);
-            NextMoltenShell = DateTime.Now.AddMilliseconds(1000);
+            NextMoltenShell = DateTime.Now.AddMilliseconds(new Random().Next(900, 1100));
         }
         
         private bool IsShieldUp()
@@ -185,16 +185,13 @@ namespace VmsHelper
             return shield != null;
         }
 
-        private IEnumerator UseSoulRipper(CachedValue<ActorVaalSkill> vaalSkill)
+        private IEnumerator UseSoulRipper()
         {
-            // use when we have 1..37 souls
             if (Settings.SoulRipperEnabled &&
-                NextSoulRipperFlask < DateTime.Now &&
-                vaalSkill?.Value?.CurrVaalSouls > 0 &&
-                vaalSkill?.Value?.CurrVaalSouls < 3 * vaalSkill?.Value?.VaalSoulsPerUse / 4)
+                NextSoulRipperFlask < DateTime.Now)
             {
                 yield return Input.KeyPress(Settings.SoulRipperKey);
-                NextSoulRipperFlask = DateTime.Now.AddMilliseconds(2000);
+                NextSoulRipperFlask = DateTime.Now.AddMilliseconds(new Random().Next(450, 550));
             }
         }
         
@@ -205,7 +202,7 @@ namespace VmsHelper
                 PlayerLifeComponent?.Value?.CurMana > Settings.MinManaSoulCatcherThreshold)
             {
                 yield return Input.KeyPress(Settings.SoulCatcherKey);
-                NextSoulCatcherFlask = DateTime.Now.AddMilliseconds(4000);
+                NextSoulCatcherFlask = DateTime.Now.AddMilliseconds(new Random().Next(3750, 4250));
             }
         }
         
@@ -215,7 +212,7 @@ namespace VmsHelper
                 NextArmorFlask < DateTime.Now)
             {
                 yield return Input.KeyPress(Settings.GraniteFlaskKey);
-                NextArmorFlask = DateTime.Now.AddMilliseconds(4800);
+                NextArmorFlask = DateTime.Now.AddMilliseconds(new Random().Next(4600, 5000));
             }
         }
         
@@ -234,6 +231,7 @@ namespace VmsHelper
             if (MenuWindow.IsOpened) return false;
             if (GameController?.Entities?.Count == 0) return false;
             if (GameController?.IsForeGroundCache == false) return false;
+            if (ChatIsOpened()) return false;
             return true;
         }
     }
