@@ -10,7 +10,7 @@ namespace VmsHelper
         public ToggleNode Enable { get; set; } = new ToggleNode(true);
 
         [Menu("Debug")]
-        public ToggleNode Debug { get; set; } = new ToggleNode(false);
+        public ToggleNode Debug { get; set; } = new ToggleNode(true);
 
         #region VMS
 

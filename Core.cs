@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Linq;
 using ExileCore;
+using ExileCore.PoEMemory;
 using ExileCore.PoEMemory.Components;
 using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared;
@@ -42,6 +43,7 @@ namespace VmsHelper
             VaalHasteActorVaalSkill = new TimeCache<ActorVaalSkill>(UpdateVaalHaste, 5000);
             VaalGraceActorVaalSkill = new TimeCache<ActorVaalSkill>(UpdateVaalGrace, 5000);
             PlayerLifeComponent = new TimeCache<Life>(UpdateLifeComponent, 66);
+            chatUi = new TimeCache<Element>(GetChatUi,5000);
             Core.MainRunner.Run(new Coroutine(MainCoroutine(), this, "VmsHelperMain"));
             base.OnLoad();
         }
@@ -52,6 +54,7 @@ namespace VmsHelper
             {
                 if (CanRun())
                 {
+                    yield return UseSoulRipper();
                     yield return CastVallMoltenShell();
                     yield return CastMoltenShell();
                     yield return CastVaalD();
@@ -77,7 +80,6 @@ namespace VmsHelper
             if (!Settings.UseVaalD) yield break;
             if (NextVaalD > DateTime.Now) yield break;
             if (VaalDActorVaalSkill.Value == null) yield break;
-            yield return UseSoulRipper();
             var esCondition = Settings.VaalDMinEsPercentThreshold > 0 &&
                               PlayerLifeComponent?.Value?.CurES < PlayerLifeComponent?.Value?.MaxES
                               * Settings.VaalDMinEsPercentThreshold / 100d;
@@ -95,7 +97,6 @@ namespace VmsHelper
             if (!Settings.UseVaalGrace) yield break;
             if (NextVaalGrace > DateTime.Now) yield break;
             if (VaalGraceActorVaalSkill.Value == null) yield break;
-            yield return UseSoulRipper();
             var hpCondition = Settings.VaalGraceMinHpPercentThreshold > 0 &&
                               PlayerLifeComponent?.Value?.CurHP < PlayerLifeComponent?.Value?.MaxHP
                               * Settings.VaalGraceMinHpPercentThreshold / 100d;
@@ -116,7 +117,6 @@ namespace VmsHelper
             if (!Settings.UseVaalHaste) yield break;
             if (NextVaalHaste > DateTime.Now) yield break;
             if (VaalHasteActorVaalSkill.Value == null) yield break;
-            yield return UseSoulRipper();
             if (IsVaalSkillReady(VaalHasteActorVaalSkill))
             {
                 yield return UseSoulCatcher();
@@ -131,7 +131,6 @@ namespace VmsHelper
             if (NextVaalMoltenShell > DateTime.Now) yield break;
             if (VmsActorVaalSkill.Value == null) yield break;
             if (IsShieldUp()) yield break;
-            yield return UseSoulRipper();
             var hpCondition = Settings.VmsMinHpPercentThreshold > 0 &&
                               PlayerLifeComponent?.Value?.CurHP < PlayerLifeComponent?.Value?.MaxHP
                               * Settings.VmsMinHpPercentThreshold / 100d;
@@ -224,14 +223,54 @@ namespace VmsHelper
        
         private bool CanRun()
         {
-            if (!Settings.Enable) return false;
-            if (GameController?.InGame == false) return false;
-            if (GameController?.Area?.CurrentArea?.IsTown == true) return false;
-            if (GameController?.Area?.CurrentArea?.IsHideout == true) return false;
-            if (MenuWindow.IsOpened) return false;
-            if (GameController?.Entities?.Count == 0) return false;
-            if (GameController?.IsForeGroundCache == false) return false;
-            if (ChatIsOpened()) return false;
+            if (!Settings.Enable)
+            {
+                if (Settings.Debug) DebugWindow.LogMsg("[VmsHelper] Not enabled");
+                return false;
+            }
+
+            if (GameController?.InGame == false)
+            {
+                if (Settings.Debug) DebugWindow.LogMsg("[VmsHelper] Not in game");
+                return false;
+            }
+
+            if (GameController?.Area?.CurrentArea?.IsTown == true)
+            {
+                if (Settings.Debug) DebugWindow.LogMsg("[VmsHelper] In town = off");
+                return false;
+            }
+
+            if (GameController?.Area?.CurrentArea?.IsHideout == true)
+            {
+                if (Settings.Debug) DebugWindow.LogMsg("[VmsHelper] In hideout = off");
+                return false;
+            }
+
+            if (MenuWindow.IsOpened)
+            {
+                if (Settings.Debug) DebugWindow.LogMsg("[VmsHelper] Menu opened = off");
+                return false;
+            }
+
+            if (GameController?.Entities?.Count == 0)
+            {
+                if (Settings.Debug) DebugWindow.LogMsg("[VmsHelper] Entities = 0 so off");
+                return false;
+            }
+
+            if (GameController?.IsForeGroundCache == false)
+            {
+                if (Settings.Debug) DebugWindow.LogMsg("[VmsHelper] Game is not on top");
+                return false;
+            }
+
+            if (ChatIsOpened())
+            {
+                if (Settings.Debug) DebugWindow.LogMsg("[VmsHelper] Chat opened = off");
+                return false;
+            }
+
             return true;
         }
     }
