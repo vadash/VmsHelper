@@ -21,10 +21,10 @@ namespace VmsHelper
         public HotkeyNode VmsKey { get; set; } = new HotkeyNode(Keys.R);
 
         [Menu("Min HP to activate VMS (percent, set to 0 to disable)")]
-        public RangeNode<int> VmsMinHpPercentThreshold { get; set; } = new RangeNode<int>(90, 0, 100);
+        public RangeNode<int> VmsMinHpPercentThreshold { get; set; } = new RangeNode<int>(90, 0, 101);
         
         [Menu("Min ES to activate VMS (percent, set to 0 to disable)")]
-        public RangeNode<int> VmsMinEsPercentThreshold { get; set; } = new RangeNode<int>(0, 0, 100);
+        public RangeNode<int> VmsMinEsPercentThreshold { get; set; } = new RangeNode<int>(0, 0, 101);
 
         #endregion
 
@@ -37,10 +37,10 @@ namespace VmsHelper
         public HotkeyNode MsKey { get; set; } = new HotkeyNode(Keys.T);
 
         [Menu("Min HP to activate MS (percent, set to 0 to disable)")]
-        public RangeNode<int> MsMinHpPercentThreshold { get; set; } = new RangeNode<int>(99, 0, 100);
+        public RangeNode<int> MsMinHpPercentThreshold { get; set; } = new RangeNode<int>(99, 0, 101);
         
         [Menu("Min ES to activate MS (percent, set to 0 to disable)")]
-        public RangeNode<int> MsMinEsPercentThreshold { get; set; } = new RangeNode<int>(0, 0, 100);
+        public RangeNode<int> MsMinEsPercentThreshold { get; set; } = new RangeNode<int>(0, 0, 101);
 
         #endregion
 
