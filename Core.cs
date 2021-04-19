@@ -35,6 +35,7 @@ namespace VmsHelper
         private TimeCache<ActorVaalSkill> VaalHasteActorVaalSkill { get; set; }
         private TimeCache<ActorVaalSkill> VaalGraceActorVaalSkill { get; set; }
         private TimeCache<Life> PlayerLifeComponent { get; set; }
+        private TimeCache<Buffs> PlayerBuffsComponent { get; set; }
         
         public override void OnLoad()
         {
@@ -43,6 +44,7 @@ namespace VmsHelper
             VaalHasteActorVaalSkill = new TimeCache<ActorVaalSkill>(UpdateVaalHaste, 5000);
             VaalGraceActorVaalSkill = new TimeCache<ActorVaalSkill>(UpdateVaalGrace, 5000);
             PlayerLifeComponent = new TimeCache<Life>(UpdateLifeComponent, 66);
+            PlayerBuffsComponent = new TimeCache<Buffs>(UpdateBuffsComponent, 66);
             chatUi = new TimeCache<Element>(GetChatUi,5000);
             Core.MainRunner.Run(new Coroutine(MainCoroutine(), this, "VmsHelperMain"));
             base.OnLoad();
@@ -167,7 +169,7 @@ namespace VmsHelper
         
         private bool IsShieldUp()
         {
-            var shield = PlayerLifeComponent?.Value?.Buffs
+            var shield = PlayerBuffsComponent?.Value?.BuffsList
                 .FirstOrDefault(buff => 
                     buff.Name == "molten_shell_shield" && 
                     buff.Timer > 0);
